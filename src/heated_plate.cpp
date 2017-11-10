@@ -85,6 +85,8 @@ int main(int argc, char **argv) {
 			}
 		}
 
+		ergebniszeile_eintragen(m1, n, ergebnisdatei);  // Initiale Matrix in Datei schreiben
+
 		// Zeit stoppen
 		gettimeofday(&start, NULL);
 
