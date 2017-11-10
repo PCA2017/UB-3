@@ -1,19 +1,27 @@
 //============================================================================
 // Name        : heated_plate.cpp
 // Author      : M
-// Version     :
-// Copyright   :
 // Description : Calculates the heat distribution on a plate iteratively.
-//               Boundary has the const value 0.0
+//               Boundary has the const value 0.0.
+//               The initial Matrix can have a circle of a specified Temperature
+//               between 0.0 and 127.0 in the middle.
+// Arguments   : n - Dimension of the quadratic discrete heated plate
+//               r - Radius of an inital circle with specified Temperature
+//               H - Temperature of the initial circle between 0.0 and 127.0
+//               filename - Name of the file whitch will contain the simulation results
+// Example     : ./heated_plate 10 2 10 file_1
+//               Creates a 10x10 plate with a initial circle of radius 2 with
+//               Temperature 10.0 and saves the results in an File with name file_1
 //============================================================================
 
 #include <iostream>
+#include <fstream>
 #include <new>
 #include <sys/time.h>
 
 using namespace std;
 
-//void ergebniszeile_eintragen(const particle*const, const int ntot, const double time, ofstream &);   // Ergebnis im aktuellen Zeitrschitt als Zeile in Datei eintragen.
+void ergebniszeile_eintragen(double ** matrix, int n, ofstream &);   // Ergebnis der Matrix im aktuellen Zeitrschitt in Datei eintragen.
 
 int main(int argc, char **argv) {
 
@@ -28,9 +36,15 @@ int main(int argc, char **argv) {
 	long seconds, useconds;
 	double duration;
 
+	string filename;
+	ofstream ergebnisdatei;
+
 	n = atoi(argv[1]);
 	r = atoi(argv[2]);
 	H = atoi(argv[3]);
+	filename = argv[4];
+
+	ergebnisdatei.open(filename.c_str(),ios::out);
 
 	// H auf Bereich 0.0 bis 127.0 begrenzen. (Werte in der Matrixen können dann Aufgrund der Berechnungsvorschrift den Wertebereich auch nicht verlassen.)
 	if (H > 127.0)
@@ -82,9 +96,9 @@ int main(int argc, char **argv) {
 				for (j=1; j<(n-1); j++)
 				{
 					m1[i][j] = m1[i][j] + phi*((-4)*m1[i][j] + m1[i+1][j] + m1[i-1][j] + m1[i][j+1] + m1[i][j-1]);
-//					ergebniszeile_eintragen(1,1,1,1);
 				}
 			}
+			ergebniszeile_eintragen(m1, n, ergebnisdatei);
 		}
 
 		// Zeit stoppen
@@ -104,12 +118,14 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-//void ergebniszeile_eintragen(const particle *const p, const int nmax, const double time, ofstream &OUT){
-//// Ergebniss eines Zeitschritts in OUT schreiben.
-//
-//	OUT << time << " ";                                    // Aktuelle Zeit angeben
-//	for(int i=0; i<nmax; i++){                           // Jedes Partikel in dem Array p durchlaufen. Für jedes x und y Position eintragen:
-//		OUT << p[i].x_pos << " " << p[i].y_pos << " ";
-//	}
-//	OUT << endl;                                         // Neue Zeile anlegen.
-//}
+void ergebniszeile_eintragen(double ** matrix, int n, ofstream &OUT){
+// Ergebniss eines Zeitschritts in OUT schreiben.
+
+	for (int i=0; i<n; i++)
+	{
+		for (int j=0; j<n; j++)
+			OUT << matrix[i][j] << ",";
+		OUT << endl;
+	}
+	OUT << "#" << endl;
+}
