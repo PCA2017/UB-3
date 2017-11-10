@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
 		gettimeofday(&start, NULL);
 
 		// Innere Werte der Matrix (ohne Randwerte) iterativ updaten
-		for (t = 0; t<10000; t++)  // 10000 Zeitschritte
+		for (t = 0; t<1000; t++)  // 1000 Zeitschritte
 		{
 			for (i=1; i<(n-1); i++)
 			{
