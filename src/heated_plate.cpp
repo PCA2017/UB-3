@@ -31,6 +31,7 @@ int main(int argc, char **argv) {
 	const double phi = 6.0/25.0;
 
 	double ** m1;
+	double ** m1old; // Matrix aus dem Zeitschritt davor
 
 	struct timeval start, stop;   // Zeitmessung mit gettimeofday
 	long seconds, useconds;
@@ -67,7 +68,13 @@ int main(int argc, char **argv) {
 	for(i = 1; i<n; i++)
 		m1[i] = m1[0] + i*n;
 
-	if (m1 == nullptr)
+	// Matrix aus dem letzten Zeitschritt mit (nxn) Einträgen
+	m1old = new double *[n];
+	m1old[0] = new double [n*n];
+	for(i = 1; i<n; i++)
+		m1old[i] = m1old[0] + i*n;
+
+	if (m1 == nullptr || m1old == nullptr)
 		cout << "Error: memory could not be allocated";
 	else
 	{
@@ -91,13 +98,21 @@ int main(int argc, char **argv) {
 		gettimeofday(&start, NULL);
 
 		// Innere Werte der Matrix (ohne Randwerte) iterativ updaten
-		for (t = 0; t<1000; t++)  // 1000 Zeitschritte
+		for (t = 0; t<250; t++)  // 250 Zeitschritte
 		{
+			// Werte aus dem letzten Zeitschritt zwischenspeichern
+			for (i=0; i<n; i++)
+			{
+				for (j=0; j<n; j++)
+					m1old[i][j] = m1[i][j];
+			}
+
+
 			for (i=1; i<(n-1); i++)
 			{
 				for (j=1; j<(n-1); j++)
 				{
-					m1[i][j] = m1[i][j] + phi*((-4)*m1[i][j] + m1[i+1][j] + m1[i-1][j] + m1[i][j+1] + m1[i][j-1]);
+					m1[i][j] = m1old[i][j] + phi*((-4)*m1old[i][j] + m1old[i+1][j] + m1old[i-1][j] + m1old[i][j+1] + m1old[i][j-1]);
 				}
 			}
 			ergebniszeile_eintragen(m1, n, ergebnisdatei);
@@ -113,6 +128,8 @@ int main(int argc, char **argv) {
 
 		cout << "Dauer: " << duration << " Sekunden" << endl;
 
+		delete[] m1old[0];
+		delete[] m1old;
 		delete[] m1[0];
 		delete[] m1;
 	}
