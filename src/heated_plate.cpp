@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
 					m1old[i][j] = m1[i][j];
 			}
 
-
+			// Werte des aktuellen Zeitschritts berechnen
 			for (i=1; i<(n-1); i++)
 			{
 				for (j=1; j<(n-1); j++)
