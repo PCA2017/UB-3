@@ -25,8 +25,8 @@ void ergebniszeile_eintragen(double ** matrix, int n, ofstream &);   // Ergebnis
 
 int main(int argc, char **argv) {
 
-	unsigned int i, j, n, r, r2, a, b, t;  // Nur Werte > 0 möglich
-	double H;
+	unsigned int i, j, n, r, r2, t;  // Nur Werte > 0 möglich
+	double H, a, b;
 
 	const double phi = 6.0/25.0;
 
@@ -58,8 +58,8 @@ int main(int argc, char **argv) {
 
 	r2 = r*r; // r^2
 
-	a = n/2;  // Mittelpunkt Kreis in x-Richtung
-	b = n/2;  // Mittelpunkt Kreis in y-Richtung
+	a = (n-1)/2.0;  // Mittelpunkt Kreis in x-Richtung
+	b = (n-1)/2.0;  // Mittelpunkt Kreis in y-Richtung
 
 	// Matrix mit (nxn) Einträgen
 	m1 = new double *[n];
