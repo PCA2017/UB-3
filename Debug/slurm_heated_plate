@@ -2,7 +2,7 @@
 
 #SBATCH --nodes=1
 
-#SBATCH --time=1
+#SBATCH --time=5
 #SBATCH --job-name=heated_plate_pra01
 #SBATCH --output=heated_plate_out
 
