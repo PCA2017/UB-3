@@ -21,11 +21,13 @@
 
 using namespace std;
 
-void ergebniszeile_eintragen(double ** matrix, int n, ofstream &);   // Ergebnis der Matrix im aktuellen Zeitrschitt in Datei eintragen.
+void init_matrix(double ** matrix, int n, double a, double b, int r, double H);   // Initiale Matrix erzeugen
+void update_matrix(int n, const double phi, double ** matrix, double ** matrix_old); // Updatet den Wert in matrix anhand Wärmeleitungsgleichung und der alten Matrix
+void ergebniszeile_eintragen(double ** matrix, int n, ofstream &);   // Ergebnis der Matrix im aktuellen Zeitrschitt in Datei eintragen
 
 int main(int argc, char **argv) {
 
-	unsigned int i, j, n, r, r2, t;  // Nur Werte > 0 möglich
+	unsigned int i, n, r, t;  // Nur Werte > 0 möglich
 	double H, a, b;
 
 	const double phi = 6.0/25.0;
@@ -57,8 +59,6 @@ int main(int argc, char **argv) {
 	if (r > ((n/2) -2))
 		r = ((n/2) -2);
 
-	r2 = r*r; // r^2
-
 	a = (n-1)/2.0;  // Mittelpunkt Kreis in x-Richtung
 	b = (n-1)/2.0;  // Mittelpunkt Kreis in y-Richtung
 
@@ -79,18 +79,7 @@ int main(int argc, char **argv) {
 	else
 	{
 		// Matrix initialisieren
-		for (i=0; i<n; i++)
-		{
-			for (j=0; j<n; j++)
-			{
-				// Punkte im Kreis zu H setzten
-				if (((i-a)*(i-a)+(j-b)*(j-b)) < r2)
-					m1[i][j] = H;
-				// Rest inklusive Rand zu =0.0 setzten
-				else
-					m1[i][j] = 0.0;  // Achtung: Wenn Kreis vom Nutzer zu groß angegeben werden Randwerte gesetzt die sich nicht verändern!
-			}
-		}
+		init_matrix(m1, n, a, b, r, H);
 
 		ergebniszeile_eintragen(m1, n, ergebnisdatei);  // Initiale Matrix in Datei schreiben
 
@@ -100,21 +89,7 @@ int main(int argc, char **argv) {
 		// Innere Werte der Matrix (ohne Randwerte) iterativ updaten
 		for (t = 0; t<100; t++)  // 100 Zeitschritte
 		{
-			// Werte aus dem letzten Zeitschritt zwischenspeichern
-			for (i=0; i<n; i++)
-			{
-				for (j=0; j<n; j++)
-					m1old[i][j] = m1[i][j];
-			}
-
-			// Werte des aktuellen Zeitschritts berechnen
-			for (i=1; i<(n-1); i++)
-			{
-				for (j=1; j<(n-1); j++)
-				{
-					m1[i][j] = m1old[i][j] + phi*((-4)*m1old[i][j] + m1old[i+1][j] + m1old[i-1][j] + m1old[i][j+1] + m1old[i][j-1]);
-				}
-			}
+			update_matrix(n, phi, m1, m1old);
 			ergebniszeile_eintragen(m1, n, ergebnisdatei);
 		}
 
@@ -137,6 +112,43 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
+void init_matrix(double ** matrix, int n, double a, double b, int r, double H){
+// Initialisiert eine (nxn) Matrix mit 0en bis auf einen Kreis mit den Werten H mit Radius r und Mittelpunkt bei (a,b)
+
+	unsigned int r2 = r*r; // r^2
+
+	for (int i=0; i<n; i++)
+	{
+		for (int j=0; j<n; j++)
+		{
+			// Punkte im Kreis zu H setzten
+			if (((i-a)*(i-a)+(j-b)*(j-b)) < r2)
+				matrix[i][j] = H;
+			// Rest zu =0.0 setzten
+			else
+				matrix[i][j] = 0.0;  // Achtung: Wenn Kreisradius zu groß übergeben wurden, Randwerte !=0 gesetzt die sich nicht verändern! -> Bei Eingabe geprüft
+		}
+	}
+}
+
+void update_matrix(int n, const double phi, double ** matrix, double ** matrix_old){
+// Updatet den Wert in matrix anhand Wärmeleitungsgleichung mit phi und der alten Matrix matrix_old
+
+	// Werte aus dem letzten Zeitschritt in matrix_old zwischenspeichern
+	for (int i=0; i<n; i++)
+	{
+		for (int j=0; j<n; j++)
+			matrix_old[i][j] = matrix[i][j];
+	}
+
+	// Werte des aktuellen Zeitschritts berechnen
+	for (int i=1; i<(n-1); i++)
+	{
+		for (int j=1; j<(n-1); j++)
+			matrix[i][j] = matrix_old[i][j] + phi*((-4)*matrix_old[i][j] + matrix_old[i+1][j] + matrix_old[i-1][j] + matrix_old[i][j+1] + matrix_old[i][j-1]);
+	}
+}
+
 void ergebniszeile_eintragen(double ** matrix, int n, ofstream &OUT){
 // Ergebniss eines Zeitschritts in OUT schreiben.
 
@@ -144,6 +156,7 @@ void ergebniszeile_eintragen(double ** matrix, int n, ofstream &OUT){
 	{
 		for (int j=0; j<n; j++)
 			OUT << matrix[i][j] << ",";
+
 		OUT << endl;
 	}
 	OUT << "#" << endl;
